@@ -1,0 +1,6 @@
+@Gestion_RRHH_Server_HostAddress = http://localhost:5298
+
+GET {{Gestion_RRHH_Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

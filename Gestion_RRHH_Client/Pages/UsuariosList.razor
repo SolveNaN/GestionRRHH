@@ -1,0 +1,127 @@
+﻿@page "/usuarios"
+@using Gestion_RRHH_Client.Models
+@inject HttpClient Http
+
+<PageTitle>Usuarios</PageTitle>
+
+<h1>Usuarios</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (Usuarios == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Cedula</th>
+                <th>Direccion</th>
+                <th>Departamento</th>
+                <th>Seccion</th>
+                <th>Rol</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var usuario in Usuarios)
+            {
+                <tr>
+                    <td>@usuario.Nombre</td>
+                    <td>@usuario.Cedula</td>
+                    <td>@usuario.Direccion</td>
+                    <td>@usuario.Departamento</td>
+                    <td>@usuario.Seccion</td>
+                    <td>@usuario.Rol</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<label>Nombre</label>
+<input @bind-value=usuario.Nombre type="text" placeholder="Nombre" class="form-control" />
+<label>Cedula</label>
+<input @bind-value=usuario.Cedula type="text" placeholder="Cedula" class="form-control" />
+<label>Contraseña</label>
+<input @bind-value=usuario.Password type="text" placeholder="Password" class="form-control" />
+<label>Rol</label>
+<select @bind=usuario.Rol class="form-select" aria-label="Default select example">
+    <option selected>Elegir dirección</option>
+    @foreach (var i in Roles)
+    {
+        <option value=@i>@i</option>
+    }
+</select>
+<label>Dirección</label>
+<select @bind=usuario.Direccion class="form-select" aria-label="Default select example">
+    <option selected>Elegir dirección</option>
+    @foreach (var i in Direcciones)
+    {
+        <option value=@i.Nombre>@i.Nombre</option>
+    }
+</select>
+<label>Departamento</label>
+<select @bind=usuario.Departamento class="form-select" aria-label="Default select example">
+    <option selected>Elegir departamento</option>
+    @foreach (var i in Departamentoes)
+    {
+        <option value=@i.Nombre>@i.Nombre</option>
+    }
+</select>
+<label>Sección</label>
+<select @bind=usuario.Seccion class="form-select" aria-label="Default select example">
+    <option selected>Elegir sección</option>
+    @foreach (var i in Secciones)
+    {
+        <option value=@i.Nombre>@i.Nombre</option>
+    }
+</select>
+
+<br />
+<button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+<p>@Respuesta</p>
+@code {
+    Conexion conexion = new Conexion();
+    UsuarioDTO usuario = new UsuarioDTO();
+
+    string Respuesta = "";
+    async Task Guardar()
+    {
+        var respuesta = await Http.PostAsJsonAsync($"{conexion.server}/api/Usuario/Registrar", usuario);
+        Respuesta = await respuesta.Content.ReadAsStringAsync();
+
+    }
+
+    public static List<Direccion> Direcciones = new List<Direccion>();
+    public static List<Departamento> Departamentoes = new List<Departamento>();
+    public static List<Seccion> Secciones = new List<Seccion>();
+    public static List<string> Roles = new List<string>
+    {
+        {"Administrador"},{"Supervisor"},{"Usuario"}
+    };
+    public Usuario[] Usuarios;
+    
+    
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Actualizar();
+    }
+
+    async Task Actualizar()
+    {
+        var respuesta = await Http.GetFromJsonAsync<List<Direccion>>($"{conexion.server}/api/Direccion/Listado");
+        Direcciones = respuesta;
+        var usuarios = await Http.GetFromJsonAsync<Usuario[]>($"{conexion.server}/api/Usuario/Listado");
+        Usuarios = usuarios;
+        var departamentos = await Http.GetFromJsonAsync<List<Departamento>>($"{conexion.server}/api/Departamento/Listado");
+        Departamentoes = departamentos;
+        var respuestaSeccion = await Http.GetFromJsonAsync<List<Seccion>>($"{conexion.server}/api/Seccion/Listado");
+        Secciones = respuestaSeccion;
+    }
+    
+}

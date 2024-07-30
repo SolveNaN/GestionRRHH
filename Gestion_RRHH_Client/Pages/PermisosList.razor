@@ -1,0 +1,226 @@
+﻿@page "/counter"
+@using Gestion_RRHH_Client.Models
+@using System.Security.Claims
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthStateProv
+<PageTitle>Permiso</PageTitle>
+
+<h1>Permiso</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (Permisoes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <AuthorizeView Roles="Supervisor,Administrador">
+        <Authorized>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Motivo</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Cantidad Horas</th>
+                        <th>Aprobado</th>
+                        <th>Fecha aprobación</th>
+                        <th>Observaciones</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in Permisoes)
+                    {
+                        <tr>
+                            <td>
+                                @if (Usuarios.Where(x => x.Id == i.UsuarioId).FirstOrDefault() != null)
+                                {
+                                    @Usuarios.Where(x => x.Id == i.UsuarioId).FirstOrDefault().Nombre
+                                }
+                                </td>
+                            <td>@i.Motivo</td>
+                            <td>@i.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@i.Hora</td>
+                            <td>@i.CantidadHoras</td>
+                            <td>@i.Aprobado</td>
+                            <td>@i.FechaAprueba.ToString("dd/MM/yyyy")</td>
+                            <td>@i.Observaciones</td>
+                            <td>
+                                <div style="cursor:pointer" @onclick="()=>AignarObjeto(i)">
+                                    <img src="/editar.png" width="20" class="img-fluid" alt="...">
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </Authorized>        
+    </AuthorizeView>
+    <AuthorizeView Roles="Usuario">
+        <Authorized>
+            <table class="table">
+                <thead>
+                    <tr>
+                        
+                        <th>Motivo</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Cantidad Horas</th>
+                        <th>Aprobado</th>
+                        <th>Fecha aprobación</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in MisPermisoes)
+                    {
+                        <tr>
+                            
+                            <td>@i.Motivo</td>
+                            <td>@i.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@i.Hora</td>
+                            <td>@i.CantidadHoras</td>
+                            <td>@i.Aprobado</td>
+                            <td>@i.FechaAprueba.ToString("dd/MM/yyyy")</td>
+                            <td>@i.Observaciones</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </Authorized>        
+    </AuthorizeView>
+    
+}
+<br />
+<AuthorizeView Roles="Usuario">
+    <Authorized>
+        <label>Motivo</label>
+        <select @bind=objeto.Motivo class="form-select" aria-label="Default select example">
+            <option selected>Elegir Motivos</option>
+            @foreach (var i in Motivos)
+            {
+                <option value="@i.Nombre">@i.Nombre</option>
+            }
+            <option value="Otro">Otro</option>
+        </select>
+        <label>Fecha y Hora Permiso</label>
+        <input @bind-value=objeto.Fecha type="datetime" placeholder="Escribir Fecha" class="form-control" />
+        <label>Cantidad Horas</label>
+        <input @bind-value=objeto.CantidadHoras type="number" placeholder="Escribir Horas" class="form-control" />
+        <br />
+        @if (objeto.Motivo == "Otro")
+        {
+
+            <input @bind-value=Otro type="text" placeholder="Escribir Motivo" class="form-control" />
+        }
+
+        <br />
+        <button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+    </Authorized>
+</AuthorizeView>
+<AuthorizeView Roles="Supervisor,Administrador">
+    <Authorized>
+        
+        @if (objetoAsignado.Id > 0)
+        {
+            <h3>
+                Solicitud de
+                @if (Usuarios.Where(x => x.Id == objetoAsignado.UsuarioId).FirstOrDefault() != null)
+                {
+                    @Usuarios.Where(x => x.Id == objetoAsignado.UsuarioId).FirstOrDefault().Nombre
+                }
+
+            </h3>
+            <label>Aprobado</label>
+            <select @bind=objetoAsignado.Aprobado class="form-select" aria-label="Default select example">
+                <option selected>Elegir Aprobado</option>
+                <option value="Si">Si</option>
+                <option value="No">No</option>
+            </select>          
+            <br />
+            @if (objeto.Motivo == "Otro")
+            {
+
+                <input @bind-value=Otro type="text" placeholder="Escribir Motivo" class="form-control" />
+            }
+            <label>Fecha y Hora Permiso</label>
+            <input @bind-value=objetoAsignado.Fecha type="datetime" placeholder="Escribir Fecha" class="form-control" />
+            <label>Cantidad Horas</label>
+            <input @bind-value=objetoAsignado.CantidadHoras type="number" placeholder="Escribir Horas" class="form-control" />
+            <label>Observaciones</label>
+            <input @bind-value=objetoAsignado.Observaciones type="number" placeholder="Observaciones" class="form-control" />
+            <br />
+            <button class="btn btn-primary" @onclick="EditarPermiso">Actualizar</button>
+        }
+        
+    </Authorized>
+</AuthorizeView>
+<p>@Respuesta</p>
+
+@code {
+    Conexion conexion = new Conexion();
+    Permiso objeto = new Permiso();
+    Permiso objetoAsignado = new Permiso();
+    string Respuesta = "";
+    string Otro = "";
+    int miId = 0;
+
+    async Task Guardar()
+    {
+        if (objeto.Motivo=="Otro")
+        {
+            objeto.Motivo = Otro;
+        }        
+        objeto.UsuarioId = miId;
+        objeto.Hora = objeto.Fecha.ToString("HH:mm");
+        var respuesta = await Http.PostAsJsonAsync($"{conexion.server}/api/Permiso/Crear", objeto);
+        Respuesta = await respuesta.Content.ReadAsStringAsync();
+        await Actualizar();
+
+    }
+
+    public static List<Permiso> Permisoes = new List<Permiso>();   
+    public static List<Permiso> MisPermisoes = new List<Permiso>();
+    public static List<Motivo> Motivos = new List<Motivo>();
+    public static List<Usuario> Usuarios = new List<Usuario>();
+    protected override async Task OnInitializedAsync()
+    {
+        await Actualizar();
+
+
+    }
+
+    async Task Actualizar()
+    {
+        var respuesta = await Http.GetFromJsonAsync<List<Permiso>>($"{conexion.server}/api/Permiso/Listado");
+        Permisoes = respuesta;
+        var motivos = await Http.GetFromJsonAsync<List<Motivo>>($"{conexion.server}/api/Motivo/Listado");
+        Motivos = motivos;
+        var authState = await AuthStateProv.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var usuarios = await Http.GetFromJsonAsync<List<Usuario>>($"{conexion.server}/api/Usuario/Listado");
+        Usuarios = usuarios;
+        if (user.Identity.IsAuthenticated)
+        {
+            var UserId = user.FindFirst(ClaimTypes.NameIdentifier);
+            miId = Convert.ToInt16(UserId.Value);
+            MisPermisoes = Permisoes.Where(x => x.UsuarioId == miId).ToList();
+            Console.WriteLine(UserId);
+        }
+    }
+
+    void AignarObjeto(Permiso miobjeto)
+    {
+        objetoAsignado = miobjeto;
+    }
+
+    async Task EditarPermiso()
+    {
+        var respuesta = await Http.PutAsJsonAsync($"{conexion.server}/api/Permiso/Actualizar/{objetoAsignado.Id}", objetoAsignado);
+        await Actualizar();
+    }
+}
+

@@ -1,0 +1,64 @@
+﻿@page "/departamentos"
+@using Gestion_RRHH_Client.Models
+@inject HttpClient Http
+
+<PageTitle>Departamento</PageTitle>
+
+<h1>Departamento</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (Departamentoes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in Departamentoes)
+            {
+                <tr>
+                    <td>@i.Nombre</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<label>Nombre</label>
+<input @bind-value=objeto.Nombre type="text" placeholder="Nombre" class="form-control" />
+<br />
+<button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+<p>@Respuesta</p>
+@code {
+    Conexion conexion = new Conexion();
+    Departamento objeto = new Departamento();
+    string Respuesta = "";
+    async Task Guardar()
+    {
+        var respuesta = await Http.PostAsJsonAsync($"{conexion.server}/api/Departamento/Crear", objeto);
+        Respuesta = await respuesta.Content.ReadAsStringAsync();
+        await Actualizar();
+
+    }
+
+    private Departamento[]? Departamentoes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Actualizar();
+    }
+
+    async Task Actualizar()
+    {
+        var respuesta = await Http.GetFromJsonAsync<Departamento[]>($"{conexion.server}/api/Departamento/Listado");
+        Departamentoes = respuesta;
+    }
+
+}

@@ -1,0 +1,64 @@
+﻿@page "/direccion"
+@using Gestion_RRHH_Client.Models
+@inject HttpClient Http
+
+<PageTitle>Direccion</PageTitle>
+
+<h1>Direccion</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (Direcciones == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>                
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in Direcciones)
+            {
+                <tr>
+                    <td>@i.Nombre</td>                    
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<label>Nombre</label>
+<input @bind-value=objeto.Nombre type="text" placeholder="Nombre" class="form-control" />
+<br />
+<button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+<p>@Respuesta</p>
+@code {
+    Conexion conexion = new Conexion();
+    Direccion objeto = new Direccion();
+    string Respuesta = "";
+    async Task Guardar()
+    {
+        var respuesta = await Http.PostAsJsonAsync($"{conexion.server}/api/Direccion/Crear", objeto);
+        Respuesta = await respuesta.Content.ReadAsStringAsync();
+        await Actualizar();
+
+    }
+
+    private Direccion[]? Direcciones;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Actualizar();
+    }
+
+    async Task Actualizar()
+    {
+        var respuesta = await Http.GetFromJsonAsync<Direccion[]>($"{conexion.server}/api/Direccion/Listado");
+        Direcciones = respuesta;
+    }
+
+}

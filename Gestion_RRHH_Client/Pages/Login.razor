@@ -1,0 +1,59 @@
+﻿@page "/login"
+@using Gestion_RRHH_Client.Models
+@inherits LayoutComponentBase
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProv
+@inject NavigationManager Navigation
+<h3>Login</h3>
+<br />
+<AuthorizeView>
+    <Authorized>
+        <button class="btn btn-primary" @onclick="logout">Cerrar Sesion</button>
+    </Authorized>
+    <NotAuthorized>
+        <label>Cedula</label>
+        <input placeholder="Usuario" @bind=usuario.Cedula class="form-control" style="margin-bottom:5px" />
+        <label>Clave</label>
+        <input placeholder="Clave" type="password" @bind=usuario.Password class="form-control" />
+
+        <br />
+        <button class="btn btn-primary" @onclick="Iniciar">Iniciar Sesion</button>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    string token = "";
+    Conexion conexion = new Conexion();
+    UsuarioDTO usuario = new UsuarioDTO();
+
+    async Task Iniciar()
+    {
+        var resultado = await Http.PostAsJsonAsync($"{conexion.server}/api/Usuario/Login", usuario);
+        if (resultado.IsSuccessStatusCode)
+        {
+            token = await resultado.Content.ReadAsStringAsync();
+            await GuardarSesion();
+        }
+        Console.WriteLine(token);
+        Navigation.NavigateTo("/");
+    }
+    private async Task GuardarSesion()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "Token", token);
+        await ObtenerUsuario();
+    }
+    private async Task ObtenerUsuario()
+    {
+        token = await JS.InvokeAsync<string>("localStorage.getItem", "Token");
+        Console.WriteLine(token);
+        await AuthStateProv.GetAuthenticationStateAsync();
+    }
+
+    async Task logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "Token");
+        await AuthStateProv.GetAuthenticationStateAsync();
+    }
+}
