@@ -41,47 +41,51 @@ else
         </tbody>
     </table>
 }
-<label>Nombre</label>
-<input @bind-value=usuario.Nombre type="text" placeholder="Nombre" class="form-control" />
-<label>Cedula</label>
-<input @bind-value=usuario.Cedula type="text" placeholder="Cedula" class="form-control" />
-<label>Contraseña</label>
-<input @bind-value=usuario.Password type="text" placeholder="Password" class="form-control" />
-<label>Rol</label>
-<select @bind=usuario.Rol class="form-select" aria-label="Default select example">
-    <option selected>Elegir dirección</option>
-    @foreach (var i in Roles)
-    {
-        <option value=@i>@i</option>
-    }
-</select>
-<label>Dirección</label>
-<select @bind=usuario.Direccion class="form-select" aria-label="Default select example">
-    <option selected>Elegir dirección</option>
-    @foreach (var i in Direcciones)
-    {
-        <option value=@i.Nombre>@i.Nombre</option>
-    }
-</select>
-<label>Departamento</label>
-<select @bind=usuario.Departamento class="form-select" aria-label="Default select example">
-    <option selected>Elegir departamento</option>
-    @foreach (var i in Departamentoes)
-    {
-        <option value=@i.Nombre>@i.Nombre</option>
-    }
-</select>
-<label>Sección</label>
-<select @bind=usuario.Seccion class="form-select" aria-label="Default select example">
-    <option selected>Elegir sección</option>
-    @foreach (var i in Secciones)
-    {
-        <option value=@i.Nombre>@i.Nombre</option>
-    }
-</select>
+<h3>Agregar nuevo Usuario</h3>
+<div class="formulario">
+    <label>Nombre</label>
+    <input @bind-value=usuario.Nombre type="text" placeholder="Nombre" class="form-control" />
+    <label>Cedula</label>
+    <input @bind-value=usuario.Cedula type="text" placeholder="Cedula" class="form-control" />
+    <label>Contraseña</label>
+    <input @bind-value=usuario.Password type="text" placeholder="Password" class="form-control" />
+    <label>Rol</label>
+    <select @bind=usuario.Rol class="form-select" aria-label="Default select example">
+        <option selected>Elegir dirección</option>
+        @foreach (var i in Roles)
+        {
+            <option value=@i>@i</option>
+        }
+    </select>
+    <label>Dirección</label>
+    <select @bind=usuario.Direccion class="form-select" aria-label="Default select example">
+        <option selected>Elegir dirección</option>
+        @foreach (var i in Direcciones)
+        {
+            <option value=@i.Nombre>@i.Nombre</option>
+        }
+    </select>
+    <label>Departamento</label>
+    <select @bind=usuario.Departamento class="form-select" aria-label="Default select example">
+        <option selected>Elegir departamento</option>
+        @foreach (var i in Departamentoes)
+        {
+            <option value=@i.Nombre>@i.Nombre</option>
+        }
+    </select>
+    <label>Sección</label>
+    <select @bind=usuario.Seccion class="form-select" aria-label="Default select example">
+        <option selected>Elegir sección</option>
+        @foreach (var i in Secciones)
+        {
+            <option value=@i.Nombre>@i.Nombre</option>
+        }
+    </select>
 
-<br />
-<button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+    <br />
+    <button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+</div>
+
 <p>@Respuesta</p>
 @code {
     Conexion conexion = new Conexion();
